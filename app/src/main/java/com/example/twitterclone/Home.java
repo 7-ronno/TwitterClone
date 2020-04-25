@@ -34,37 +34,39 @@ public class Home extends AppCompatActivity {
 
         setTitle("Home");
 
-        mListView=findViewById(R.id.HomeListView);
-        mArrayList=new ArrayList();
-        mArrayAdapter=new ArrayAdapter(Home.this,android.
-                R.layout.simple_list_item_1,mArrayList);
+        mListView = findViewById(R.id.HomeListView);
+        mArrayList = new ArrayList();
+        mArrayAdapter = new ArrayAdapter(Home.this, android.
+                R.layout.simple_list_item_1, mArrayList);
+        try {
+            ParseQuery<ParseUser> parseQuery = ParseUser.getQuery();
+            final ProgressDialog dialog = new ProgressDialog(Home.this);
+            dialog.setMessage("Loading");
+            dialog.show();
+            parseQuery.whereNotEqualTo("username", ParseUser.getCurrentUser().getUsername());
+            parseQuery.findInBackground(new FindCallback<ParseUser>() {
+                @Override
+                public void done(List<ParseUser> users, ParseException e) {
+                    if (users.size() > 0 && e == null) {
+                        for (ParseUser user : users) {
+                            mArrayList.add(user.getUsername());
+                        }
 
-        ParseQuery<ParseUser> parseQuery=ParseUser.getQuery();
-        final ProgressDialog dialog=new ProgressDialog(Home.this);
-        dialog.setMessage("Loading");
-        dialog.show();
-        parseQuery.whereNotEqualTo("username",ParseUser.getCurrentUser().getUsername());
-        parseQuery.findInBackground(new FindCallback<ParseUser>() {
-            @Override
-            public void done(List<ParseUser> users, ParseException e) {
-                if(users.size()>0 && e==null){
-                    for(ParseUser user:users){
-                        mArrayList.add(user.getUsername());
+                    } else if (e != null) {
+                        Toast.makeText(Home.this, e.getMessage()
+                                , Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(Home.this, "Nobody else", Toast.LENGTH_LONG).show();
                     }
-
-                }else if(e!=null) {
-                    Toast.makeText(Home.this,e.getMessage()
-                            ,Toast.LENGTH_LONG).show();
+                    mListView.setAdapter(mArrayAdapter);
+                    dialog.dismiss();
                 }
-                else{
-                    Toast.makeText(Home.this,"Nobody else",Toast.LENGTH_LONG).show();
-                }
-                mListView.setAdapter(mArrayAdapter);
-                dialog.dismiss();
-            }
-        });
+            });
 
 
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override
