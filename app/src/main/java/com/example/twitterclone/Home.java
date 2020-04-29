@@ -5,7 +5,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckedTextView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -17,11 +21,13 @@ import com.parse.LogOutCallback;
 import com.parse.ParseException;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
+import com.shashank.sony.fancytoastlib.FancyToast;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Home extends AppCompatActivity {
+public class Home extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
     private ListView mListView;
     private ArrayList<String> mArrayList;
@@ -37,7 +43,12 @@ public class Home extends AppCompatActivity {
         mListView = findViewById(R.id.HomeListView);
         mArrayList = new ArrayList();
         mArrayAdapter = new ArrayAdapter(Home.this, android.
-                R.layout.simple_list_item_1, mArrayList);
+                R.layout.simple_list_item_checked, mArrayList);
+
+        mListView.setOnItemClickListener(this);
+
+        mListView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
+
         try {
             ParseQuery<ParseUser> parseQuery = ParseUser.getQuery();
             final ProgressDialog dialog = new ProgressDialog(Home.this);
@@ -58,7 +69,18 @@ public class Home extends AppCompatActivity {
                     } else {
                         Toast.makeText(Home.this, "Nobody else", Toast.LENGTH_LONG).show();
                     }
+
                     mListView.setAdapter(mArrayAdapter);
+
+                    for(String user:mArrayList){
+                        if(ParseUser.getCurrentUser().getList("fanOf")!=null) {
+                            if (ParseUser.getCurrentUser().getList("fanOf").
+                                    contains(user)) {
+                                mListView.setItemChecked(mArrayList.indexOf(user), true);
+                            }
+                        }
+                    }
+
                     dialog.dismiss();
                 }
             });
@@ -94,5 +116,32 @@ public class Home extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+        CheckedTextView checkedTextView=(CheckedTextView) view;
+
+        if(checkedTextView.isChecked()){
+            FancyToast.makeText(this,mArrayList.get(position)+
+                    "is followed",Toast.LENGTH_LONG,FancyToast.SUCCESS,true).show();
+            ParseUser.getCurrentUser().add("fanOf",mArrayList.get(position));
+        }else{
+            FancyToast.makeText(this,mArrayList.get(position)+
+                    "is unfollowed",Toast.LENGTH_LONG,FancyToast.SUCCESS,true).show();
+            ParseUser.getCurrentUser().getList("fanOf").remove(mArrayList.get(position));
+            List newList=ParseUser.getCurrentUser().getList("fanOf");
+            ParseUser.getCurrentUser().remove("fanOf");
+            ParseUser.getCurrentUser().put("fanOf",newList);
+        }
+        ParseUser.getCurrentUser().saveInBackground(new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                FancyToast.makeText(Home.this, "saved",Toast.LENGTH_LONG,
+                        FancyToast.SUCCESS,true).show();
+            }
+        });
+
     }
 }
