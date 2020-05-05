@@ -112,7 +112,12 @@ public class Home extends AppCompatActivity implements AdapterView.OnItemClickLi
                         finish();
                     }
                 }
-            });
+            }
+            );
+        }
+        else if (item.getItemId()==R.id.menuTweet){
+            Intent intent=new Intent(Home.this,Tweet.class);
+            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);

@@ -6,4 +6,9 @@
         android:id="@+id/menuLogout"
         android:title="Logout"
         app:showAsAction="always"/>
+    <item
+        android:id="@+id/menuTweet"
+        android:icon="@drawable/tweet"
+        app:showAsAction="always"
+        android:title="Tweet"/>
 </menu>
